@@ -1,0 +1,13 @@
+Linha,Descricao
+552,method_dec
+553,method_dec
+554,var_dec+atrib
+555,conditional
+556,return
+560,var_dec+atrib
+561,var_dec+atrib
+562,conditional
+563,var_dec+atrib
+564,conditional
+565,var_dec+atrib
+569,return
