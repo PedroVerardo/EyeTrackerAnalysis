@@ -1,0 +1,73 @@
+Code Snippet;Developer;Explanation;Had Difficulty
+2;1;Correto;FALSE
+2;2;Parcialmente Correto;TRUE
+2;3;Incorreto;TRUE
+2;4;Parcialmente Correto;FALSE
+2;5;Incorreto;TRUE
+2;6;Correto;FALSE
+3;1;Correto;FALSE
+3;2;Parcialmente Correto;FALSE
+3;3;Incorreto;FALSE
+3;4;Correto;FALSE
+3;5;Incorreto;FALSE
+3;6;Parcialmente Correto;FALSE
+4;1;Correto;FALSE
+4;2;Correto;FALSE
+4;3;Correto;FALSE
+4;4;Incorreto;TRUE
+4;5;Correto;TRUE
+4;6;Correto;FALSE
+5;1;Correto;FALSE
+5;2;Parcialmente Correto;FALSE
+5;3;Incorreto;FALSE
+5;4;Correto;TRUE
+5;5;Parcialmente Correto;TRUE
+5;6;Correto;FALSE
+6;1;Correto;FALSE
+6;2;Incorreto;FALSE
+6;3;Correto;FALSE
+6;4;Correto;FALSE
+6;5;Incorreto;FALSE
+6;6;Correto;FALSE
+7;1;Correto;FALSE
+7;2;Correto;FALSE
+7;3;Correto;FALSE
+7;4;Incorreto;FALSE
+7;5;Parcialmente Correto;FALSE
+7;6;Correto;FALSE
+8;1;Correto;FALSE
+8;2;Correto;FALSE
+8;3;Parcialmente Correto;FALSE
+8;4;Parcialmente Correto;TRUE
+8;5;Correto;FALSE
+8;6;Correto;FALSE
+9;1;Parcialmente Correto;TRUE
+9;2;Incorreto;FALSE
+9;3;Incorreto;TRUE
+9;4;Correto;TRUE
+9;5;Incorreto;TRUE
+9;6;Correto;FALSE
+10;1;Correto;FALSE
+10;2;Parcialmente Correto;FALSE
+10;3;Correto;FALSE
+10;4;Incorreto;FALSE
+10;5;Correto;FALSE
+10;6;Correto;FALSE
+11;1;Correto;FALSE
+11;2;Incorreto;TRUE
+11;3;Incorreto;TRUE
+11;4;Correto;FALSE
+11;5;Correto;FALSE
+11;6;Correto;FALSE
+12;1;NaN;NaN
+12;2;Incorreto;FALSE
+12;3;Incorreto;FALSE
+12;4;Incorreto;FALSE
+12;5;Parcialmente Correto;TRUE
+12;6;Correto;FALSE
+13;1;Correto;FALSE
+13;2;NaN;NaN
+13;3;Incorreto;FALSE
+13;4;Correto;FALSE
+13;5;Incorreto;FALSE
+13;6;Correto;TRUE

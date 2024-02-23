@@ -3,7 +3,7 @@ Linha,Descricao
 75,var_dec+atrib
 76,var_dec+atrib
 77,method_call
-78,var_dec+atrib    
+78,var_dec+atrib
 79,exception
 80,var_atrib
 81,var_dec+atrib

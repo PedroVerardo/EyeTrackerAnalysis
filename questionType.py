@@ -4,6 +4,9 @@ import utilities as ut
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
+from scipy.stats import gaussian_kde
+import numpy as np
+import json
 
 class Question:
     def __init__(self, full_path) -> None:
@@ -17,6 +20,10 @@ class Question:
         self.connection: sqlite3.Connection = None
         self.data_frame: pd.DataFrame = None
         self.time_to_complete: float = None
+        self.most_readed_types: dict = {}
+        self.variance: float = None
+        self.get_most_readed_types()
+        self.smell = self.set_smell(self.question_number)
 
     def connect(self):
         try:
@@ -33,6 +40,7 @@ class Question:
         elif self.data_frame is not None:
             return
 
+        print(self.experiment_number, self.question_number)
         self.data_frame = pd.read_sql_query("SELECT * from fixation", self.connection)
         self.total_size = len(self.data_frame)
         self.white_spaces_percentage = ut.found_white_space(self.data_frame, "WHITESPACE", "token")
@@ -43,6 +51,8 @@ class Question:
         
         time_difference = datetime.fromtimestamp(int(df_ide['time_stamp'].max())/1000) - datetime.fromtimestamp(int(df_ide['time_stamp'].min())/1000)
         self.time_to_complete = int(time_difference.total_seconds())
+
+        self.variance = self.data_frame['source_file_line'].var() + self.data_frame['source_file_col'].var()
 
     def generate_tsv_file(self):
         if self.connection == None:
@@ -115,7 +125,6 @@ class Question:
         else:
             plt.show()
 
-
     def plot_eye_path_ide(self, save_plot: bool = False):
         if self.connection == None:
             self.connect()
@@ -135,6 +144,56 @@ class Question:
             plt.savefig(f"Question{self.question_number}_Path.png")
         else:
             plt.show()
+
+    def get_most_readed_types(self):
+        self.clean_data()
+
+        if self.question_number == "01":
+            return
+        
+        if len(self.most_readed_types) != 0:
+            return self.most_readed_types
+
+        areas = "our_tokenization/"+self.question_number+"_Code_Snippet.csv"
+
+        df = pd.read_csv(areas)
+        
+        snippet_upper_limit = df['Linha'].max()
+        snippet_lower_limit = df['Linha'].min()
+        
+
+        merged_data = pd.merge(self.data_frame, df, left_on='source_file_line', right_on='Linha')
+
+        grouped_data = merged_data.groupby('Descricao')['duration'].sum().sort_values(ascending=False)
+
+        self.most_readed_types = grouped_data.to_dict()
+
+        self.most_readed_types['out'] = 0
+
+        for index, row in self.data_frame.iterrows():
+            if row['source_file_line'] > snippet_upper_limit or row['source_file_line'] < snippet_lower_limit:
+                 self.most_readed_types['out'] += row['duration']
+        
+        return self.most_readed_types
+
+    def get_reread_info(self):
+        self.clean_data()
+        ant = 0
+        count = 0
+        areas = "our_tokenization/"+self.question_number+"_Code_Snippet.csv"
+        df = pd.read_csv(areas)
+        merged_data = pd.merge(self.data_frame, df, left_on='source_file_line', right_on='Linha')
+        result = {}
+        for index, row in merged_data.iterrows():
+            if row['source_file_line'] < ant or (row['source_file_line'] == ant and row['source_file_col'] < ant):
+                if row['Descricao'] in result:
+                    result[row['Descricao']] += 1
+                else:
+                    result[row['Descricao']] = 1
+            ant = row['source_file_line']
+
+        print(result)
+        return 
 
     def plot_white_spaces_percentage(self, save_plot: bool = False):
         pie_data = [self.total_size, self.white_spaces_count]
@@ -170,13 +229,12 @@ class Question:
         cont = 0
         for index, row in df.iterrows():
             if cont != 0 and row['fixation_start_event_time'] - (ant['fixation_start_event_time'] + ant['duration']*(10**6))  < 0:
-                print(row['fixation_start_event_time'] - ant['fixation_start_event_time'] + ant['duration']*(10**6))
-                plt.quiver(ant['source_file_line'], ant['source_file_col'], 
-                       row['source_file_line'] - ant['source_file_line'], 
+                plt.quiver(ant['source_file_col'], ant['source_file_line'], 
                        row['source_file_col'] - ant['source_file_col'], 
+                       row['source_file_line'] - ant['source_file_line'], 
                        angles='xy', scale_units='xy', scale=1, color=color, alpha=alpha)
-            plt.scatter(row['source_file_line'], row['source_file_col'], s=row['duration'], color='red', alpha=alpha)
-            plt.text(row['source_file_line'], row['source_file_col'], row['duration'], color='white', ha='center', va='center')
+            plt.scatter(row['source_file_col'],row['source_file_line'] , s=row['duration'], color='red', alpha=alpha)
+            #plt.text(row['source_file_col'],row['source_file_line'] , row['duration'], color='white', ha='center', va='center')
             ant = row
             cont+=1
             
@@ -189,11 +247,29 @@ class Question:
         plt.ylabel('Y')
         plt.show()
 
-
+    def get_variance(self):
+        return self.variance
     
+    def set_smell(self, q_number):
+        with open('codes\info.json') as f:
+            data = json.load(f)
+            return data[q_number]["smell"]
+
+    def get_density(self):
+        data = np.vstack([self.data_frame['source_file_line'], self.data_frame['source_file_col']])
+
+        kde = gaussian_kde(data)
+
+        density = kde([self.data_frame['source_file_line'].max(), self.data_frame['source_file_col'].max()])
+
+        print(density)
+        
 if __name__ == "__main__":
     q = Question("experimentos\\Experimento 05\\Sem Dejavu\\02\\db02.db3")
     q.clean_data()
     # q.plot_eye_path_fixation()
     # q.generate_tsv_file()
-    q.plot_most_readed_programming_types()
+    # q.plot_most_readed_programming_types()
+    # q.plot_eye_path_fixation()
+    # q.plot_most_readed_lines()
+    print(q.get_variance())

@@ -1,4 +1,4 @@
-Linha,Descricaoo
+Linha,Descricao
 104,method_dec
 105,var_dec+atrib
 106,var_dec+atrib
@@ -11,4 +11,4 @@ Linha,Descricaoo
 113,var_dec+atrib
 114,var_dec+atrib
 115,var_dec+atrib
-116,Instrução return
+116,return
