@@ -289,14 +289,17 @@ class QuestionComparision:
 
         result = dict(sorted(result.items(), key=lambda item: item[1], reverse=True))
         plt.title("total time spent in each token")
-        bars = plt.bar(result.keys(), result.values())
+        bars = plt.barh(list(result.keys()), list(result.values()))
 
         plt.xlabel('Tokens')
         plt.ylabel('Total Duration')
 
-        for rect in bars.patches:
-            height = rect.get_height()
-            plt.text(rect.get_x() + rect.get_width() / 2, height, round(height, 2), ha='center', va='bottom')
+        for bar in bars.patches:
+            width = bar.get_width()  # Largura da barra (valor numérico)
+            y = bar.get_y() + bar.get_height() / 2  # Posição Y do centro da barra
+
+            # Adicionando texto ao final da barra
+            plt.text(width, y, f'{width}', va='center')
 
         plt.xticks(rotation=30)
         # Show the plot
@@ -419,26 +422,39 @@ class QuestionComparision:
                         result[question.smell[:2]+"_"+question.question_number].append(question.time_to_complete)
                     else:
                         result[question.smell[:2]+"_"+question.question_number] = [question.time_to_complete]
+        max_length = max(len(item) for item in result.values())
+
+        for key in result.keys():
+            current_length = len(result[key])
+            if current_length < max_length:
+                result[key] = result[key] + [np.nan] * (max_length - current_length)
+
+        result = pd.DataFrame(result)
+
+        for column in result.columns:
+            Q1 = result[column].quantile(0.25)
+            Q3 = result[column].quantile(0.75)
+            IQR = Q3 - Q1
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            df = result[(result[column] >= lower_bound) & (result[column] <= upper_bound)]
 
         plt.xlabel('question_number')
         plt.ylabel('time spent in seconds')
         plt.title('Time per question')
 
-        items = sorted(result.items())
-        keys = [item[0] for item in items]
-        values = [item[1] for item in items]
-
-        box = plt.boxplot(values, patch_artist=True, labels=keys)
+        keys = df.columns  # Obter os nomes das colunas como rótulos
+        box = plt.boxplot(df, patch_artist=True, labels=keys)
 
         colors = self.generate_colors_by_question_and_severity(path, keys)
         colors = colors
-        colors2 = colors.copy()
 
         assert len(colors) == len(box['boxes']), "Mismatch between number of colors and number of boxes"
 
         for patch, color in zip(box['boxes'], colors):
             patch.set_facecolor(color)
 
+        plt.show()
         plt.savefig(f'boxplot_time_per_question.png', dpi=400)
         
     def generate_csv_for_top3_most_read_tokens(self) -> None:
@@ -517,8 +533,19 @@ class QuestionComparision:
             fig.write_html(f'error_x_success{experiment_question.question_number}.html', full_html=True, include_plotlyjs='cdn')
             fig.show()
 
-    def get_density(self):
-        pass
+    def get_most_readed_lines_for_all_participants(self, experiment: int = 5):
+
+        df = pd.DataFrame()
+        for key in self.questions:
+            for index, question in enumerate(self.questions[key]):
+                if index == experiment:
+                    question.clean_data()
+                    question.plot_most_readed_lines(5, save_data=True)
+                    df = pd.concat([df, question.most_readed_lines], axis=0)
+        
+        df.index.name = 'Grupo'
+        df.groupby('Grupo').sum().plot(kind='bar')
+        plt.show()
 
 if __name__ == "__main__":
     experiments_dir = "C:/Users/Pedro/OneDrive/Área de Trabalho/dataAnal/experimentos"
@@ -526,14 +553,15 @@ if __name__ == "__main__":
     qc.get_questions_for_experiments()
     qc.generate_tsv_files()
     # qc.plot_white_spaces_percentage(5)
-    # qc.plot_diff_eye_position_for_one_question(2,2,5, False)
+    #qc.plot_diff_eye_position_for_one_question(2,2,5, False)
     # qc.plot_diff_eye_position_for_one_question(2,2,5, True)
     # qc.diff_eye_position_for_one_question(2)
     # print(qc.list_of_fix_vectors)
     # qc.plot_mean_of_most_readed_tokens()
     # qc.plot_question_time_comparison_for_one_experiment(5)
     # qc.plot_scatter_error_and_success()
-    # qc.boxplot_of_time_questions('codes/info.json')
+    qc.boxplot_of_time_questions('codes/info.json')
     # qc.generate_csv_for_top3_most_read_tokens()
     # qc.plot_intereative_scatter()
+    # qc.get_most_readed_lines_for_all_participants()
     

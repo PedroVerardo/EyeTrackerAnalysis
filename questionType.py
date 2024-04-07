@@ -24,6 +24,7 @@ class Question:
         self.variance: float = None
         self.get_most_readed_types()
         self.smell = self.set_smell(self.question_number)
+        self.most_readed_lines = None
 
     def connect(self):
         try:
@@ -63,23 +64,26 @@ class Question:
         df = pd.read_sql_query(sql, self.connection)
         df.to_csv(self.full_path[:-8]+"question_"+self.question_number+".tsv", sep='\t', index=False)
 
-    def plot_most_readed_lines(self, qtd_elements: int = 5, save_plot: bool = False):
+    def plot_most_readed_lines(self, qtd_elements: int = 5, save_plot: bool = False, save_data: bool = False):
         grouped_data = self.data_frame.groupby('source_file_line')['duration'].sum()
         top_tokens = grouped_data.nlargest(qtd_elements)
-        bars = top_tokens.plot(kind='bar')
-        plt.title(f"Top {qtd_elements} Most Read Lines")
-        plt.xlabel('Source File Line')
-        plt.ylabel('Total Duration')
-        plt.xticks(rotation=30)
-
-        for rect in bars.patches:
-            height = rect.get_height()
-            plt.text(rect.get_x() + rect.get_width() / 2, height, round(height, 2), ha='center', va='bottom')
-
-        if save_plot:
-            plt.savefig(f"Top {qtd_elements} Most Read Lines{self.question_number}.png")
+        if save_data:
+            self.most_readed_lines = top_tokens
         else:
-            plt.show()
+            bars = top_tokens.plot(kind='bar')
+            plt.title(f"Top {qtd_elements} Most Read Lines")
+            plt.xlabel('Source File Line')
+            plt.ylabel('Total Duration')
+            plt.xticks(rotation=30)
+
+            for rect in bars.patches:
+                height = rect.get_height()
+                plt.text(rect.get_x() + rect.get_width() / 2, height, round(height, 2), ha='center', va='bottom')
+
+            if save_plot:
+                plt.savefig(f"Top {qtd_elements} Most Read Lines{self.question_number}.png")
+            else:
+                plt.show()
 
     def plot_most_readed_tokens(self, qtd_elements: int = 5, save_plot: bool = False):
         grouped_data = self.data_frame.groupby('token')['duration'].sum()
@@ -271,5 +275,5 @@ if __name__ == "__main__":
     # q.generate_tsv_file()
     # q.plot_most_readed_programming_types()
     # q.plot_eye_path_fixation()
-    # q.plot_most_readed_lines()
+    q.plot_most_readed_lines()
     print(q.get_variance())
